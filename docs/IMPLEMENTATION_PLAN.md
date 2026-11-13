@@ -1,4 +1,4 @@
-# CG Tribes — Implementation Plan
+# CMG Tribes — Implementation Plan
 
 ## Purpose
 Cluster-aware tribe/group management with consistent authorization and activity records.
