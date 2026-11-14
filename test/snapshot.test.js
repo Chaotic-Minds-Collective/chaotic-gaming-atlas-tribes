@@ -185,3 +185,43 @@ test("rejects malformed inputs to the membership diff", () => {
     /scope.serverId/
   );
 });
+
+
+test("preserves opaque IDs including surrounding whitespace through normalization and diff", () => {
+  const members = [
+    { providerMemberId: "player" },
+    { providerMemberId: " player " }
+  ];
+  const previous = snapshot({
+    scope: { clusterId: " cluster ", gridId: " grid ", serverId: " server " },
+    tribe: { providerTribeId: " tribe ", members }
+  });
+  assert.deepEqual(previous.scope, {
+    clusterId: " cluster ", gridId: " grid ", serverId: " server "
+  });
+  assert.equal(previous.tribe.providerTribeId, " tribe ");
+  assert.deepEqual(previous.tribe.members.map((member) => member.providerMemberId),
+    [" player ", "player"]);
+  const next = snapshot({
+    scope: previous.scope,
+    tribe: { providerTribeId: " tribe ", members: [{ providerMemberId: "player" }] }
+  });
+  const diff = diffTribeMembershipSnapshots(previous, next);
+  assert.deepEqual(diff.left, [" player "]);
+  assert.deepEqual(diff.unchanged, ["player"]);
+  assert.deepEqual(diff.joined, []);
+  for (const other of [
+    snapshot({ scope: { clusterId: "cluster" }, tribe: { providerTribeId: " tribe " } }),
+    snapshot({ scope: previous.scope, tribe: { providerTribeId: "tribe" } })
+  ]) {
+    assert.notEqual(previous.tribe.tribeKey, other.tribe.tribeKey);
+    assert.throws(() => diffTribeMembershipSnapshots(previous, other), /same cluster-scoped tribe/);
+  }
+});
+
+test("rejects sparse member arrays during normalization", () => {
+  for (const members of [new Array(1), [, { providerMemberId: "player" }],
+    [{ providerMemberId: "player" }, ,]]) {
+    assert.throws(() => snapshot({ tribe: { members } }), /must be an object/);
+  }
+});

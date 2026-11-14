@@ -12,7 +12,7 @@ function identifier(value, field) {
   if (typeof value !== "string" || value.trim() === "") {
     throw new TypeError(`${field} must be a non-empty string`);
   }
-  return value.trim();
+  return value;
 }
 
 function displayName(value, field) {
@@ -88,7 +88,7 @@ export function normalizeTribeSnapshot(input) {
   }
 
   const seenMemberIds = new Set();
-  const members = membersInput.map((member, index) => {
+  const members = Array.from(membersInput, (member, index) => {
     record(member, `tribe.members[${index}]`);
     const providerMemberId = identifier(
       member.providerMemberId,
