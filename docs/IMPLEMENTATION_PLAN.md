@@ -42,7 +42,15 @@ ATLAS tribe IDs are cluster-scoped; never key by name. Tribes owns membership sn
 - Added a pure membership diff that reports joined, left and unchanged provider member IDs between snapshots.
 - Added dependency-free Node.js tests and a Node 22 GitHub Actions workflow.
 
-This milestone consumes an explicitly supplied provider snapshot. It does not define or claim native ATLAS callback payloads, poll a server, persist state, change membership, or grant permissions.
+### Implemented: Core tribe event adapter
+
+- Normalize Core's documented `game.event.received` outbox envelope for the four supported tribe event types.
+- Require Core record ID, provider event ID, explicit cluster/server scope, timestamp and provider tribe ID; membership changes also require provider member ID.
+- Keep provider IDs opaque and derive tribe identity from cluster ID plus provider tribe ID.
+- Preserve the event's correlation ID and grid observation scope.
+- Add immutable output and deterministic tests for supported/unsupported event types, missing identifiers, timestamp normalization and input immutability.
+
+This adapter consumes already-normalized Core events. It does not define native ATLAS callbacks, create full snapshots from partial events, poll a server, persist state, change membership, or grant permissions.
 
 ## Technical gates and risks
 
@@ -66,4 +74,4 @@ This milestone consumes an explicitly supplied provider snapshot. It does not de
 
 ## Current readiness
 
-The read-only normalization and reconciliation foundation is implemented and covered by automated tests. Exact ATLAS server build, loader, SDK, callbacks and feature-specific capabilities still require isolated reproducible validation.
+The read-only normalization, reconciliation and Core event adapter foundations are implemented with automated tests. Exact ATLAS server build, loader, SDK, callbacks and feature-specific capabilities still require isolated reproducible validation.
