@@ -163,3 +163,25 @@ test("returns immutable snapshots and nested member records", () => {
   assert.ok(Object.isFrozen(result.tribe.members));
   assert.ok(Object.isFrozen(result.tribe.members[0]));
 });
+
+test("rejects malformed inputs to the membership diff", () => {
+  const valid = snapshot();
+  assert.throws(
+    () => diffTribeMembershipSnapshots({ ...valid, schemaVersion: 2 }, valid),
+    /schemaVersion/
+  );
+  assert.throws(
+    () => diffTribeMembershipSnapshots({
+      ...valid,
+      tribe: { ...valid.tribe, tribeKey: "forged-key" }
+    }, valid),
+    /does not match/
+  );
+  assert.throws(
+    () => diffTribeMembershipSnapshots({
+      ...valid,
+      scope: { ...valid.scope, serverId: " " }
+    }, valid),
+    /scope.serverId/
+  );
+});
