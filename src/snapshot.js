@@ -103,7 +103,7 @@ export function normalizeTribeSnapshot(input) {
       providerMemberId,
       displayName: displayName(member.displayName, `tribe.members[${index}].displayName`)
     });
-  }).sort((left, right) => left.providerMemberId.localeCompare(right.providerMemberId));
+  }).sort((left, right) => left.providerMemberId < right.providerMemberId ? -1 : left.providerMemberId > right.providerMemberId ? 1 : 0);
 
   const tribeKey = [
     scope.clusterId,
@@ -126,11 +126,32 @@ export function normalizeTribeSnapshot(input) {
 
 function snapshotMembers(snapshot, field) {
   record(snapshot, field);
+  if (snapshot.schemaVersion !== 1) {
+    throw new TypeError(`${field}.schemaVersion must be 1`);
+  }
+
+  const scope = record(snapshot.scope, `${field}.scope`);
+  const clusterId = identifier(scope.clusterId, `${field}.scope.clusterId`);
+  identifier(scope.gridId, `${field}.scope.gridId`);
+  identifier(scope.serverId, `${field}.scope.serverId`);
+
   const tribe = record(snapshot.tribe, `${field}.tribe`);
+  const providerTribeId = identifier(
+    tribe.providerTribeId,
+    `${field}.tribe.providerTribeId`
+  );
   const tribeKey = identifier(tribe.tribeKey, `${field}.tribe.tribeKey`);
+  const expectedTribeKey = [clusterId, providerTribeId].map(escapeIdPart).join(":");
+  if (tribeKey !== expectedTribeKey) {
+    throw new TypeError(`${field}.tribe.tribeKey does not match its cluster and provider tribe IDs`);
+  }
+
   const snapshotId = identifier(snapshot.snapshotId, `${field}.snapshotId`);
   if (!Array.isArray(tribe.members)) {
     throw new TypeError(`${field}.tribe.members must be an array`);
+  }
+  if (tribe.members.length > MAX_MEMBERS) {
+    throw new RangeError(`${field}.tribe.members must contain at most ${MAX_MEMBERS} entries`);
   }
 
   const ids = new Set();
