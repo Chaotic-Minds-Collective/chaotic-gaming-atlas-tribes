@@ -2,13 +2,11 @@
   "name": "@chaotic-minds-gaming/atlas-tribes",
   "version": "0.1.0",
   "private": true,
-  "description": "Read-only tribe snapshot normalization and membership reconciliation for CMG ATLAS.",
+  "description": "Read-only tribe snapshot, Core event normalization and membership reconciliation for CMG ATLAS.",
   "type": "module",
-  "engines": {
-    "node": ">=22"
-  },
+  "engines": { "node": ">=22" },
   "scripts": {
-    "check": "node --check src/snapshot.js && node --check test/snapshot.test.js",
+    "check": "node --check src/snapshot.js && node --check src/core-event.js && node --check test/snapshot.test.js && node --check test/core-event.test.js",
     "test": "node --test"
   }
 }
