@@ -16,15 +16,12 @@ This Chaotic Minds Gaming (CMG) module extends [CMG Core](https://github.com/Cha
 
 ## Current implementation
 
-The first server-independent milestone provides `src/snapshot.js`:
+The server-independent foundation provides:
 
-- Normalizes an explicitly supplied provider snapshot into an immutable schema-v1 contract.
-- Builds tribe identity from the cluster ID and provider tribe ID; grid/server identify the observation source, not tribe identity.
-- Preserves provider IDs as opaque strings and treats display names as descriptive only.
-- Sorts members deterministically and rejects duplicate member IDs.
-- Compares two snapshots to report joined, left and unchanged provider member IDs without issuing game mutations.
+- `src/snapshot.js`: immutable schema-v1 provider snapshot normalization and pure joined/left/unchanged membership reconciliation.
+- `src/core-event.js`: normalization of Core's documented `game.event.received` outbox envelope for `tribe.created`, `tribe.member.joined`, `tribe.member.left` and `tribe.updated`.
 
-This is a pure contract and reconciliation layer. It does not discover native callbacks, poll a server, persist membership, grant permissions, or modify ATLAS state.
+The Core event adapter requires explicit cluster/grid/server scope and opaque provider tribe/member IDs. It creates a cluster-scoped tribe key and a normalized activity record. It does not infer native callback names, construct a complete snapshot from partial events, persist membership, or issue game mutations.
 
 ## Architecture and dependencies
 
@@ -48,6 +45,6 @@ GitHub Actions runs the same checks for pushes and pull requests.
 ## Safety and compatibility
 
 - Tribe IDs are cluster-scoped; never key identity by display name.
-- Read-only snapshots do not authorize privileged actions. Core governs CMG authorization; ATLAS governs actual membership until verified mutation hooks exist.
+- Read-only snapshots and normalized events do not authorize privileged actions. Core governs CMG authorization; ATLAS governs actual membership until verified mutation hooks exist.
 - No direct database credentials, native game writes, live server access, or production deployment are included.
 - Exact ATLAS server build, loader, SDK, callbacks, threading model and feature-specific capabilities still require isolated reproducible validation.
